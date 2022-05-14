@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <style>
+    table, th, td {
+      border:1px solid black;
+    }
+    </style>
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=S, initial-scale=1.0' />
+    <link rel='stylesheet' href='styles/style.css' />
+    <title>Worst Stocks</title>
+  </head>
+  <body>
+    <h1>Stocks Info</h1>
+    <div class='worststockdisplay'>
+      <h2>S&P 500 largest losers</h2>
+        <colgroup>
+          <col span='3' />
+        </colgroup>
+          <div class='dropmenu-content'>
+            <label for='numberofstock'># of Stocks:</label>
+            <select id='numberofstock'>
+              <option value='0' selected>1000</option>
+              <option value='5'>5</option>
+              <option value='10'>10</option>
+            </select>
+            <button onclick='searchForStock()'>Search</button>
+            <div class="stockTable" style="width: 100%">
+              <table>
+                <tr>
+                  <th>Ticker Symbol</th>
+                  <th>Current Price</th>
+                  <th>% Down</th>
+                </tr>
+              </tr>
+              </table>
+              <script id="replace_with_stock_table" src="js/stockTable.js"></script>
+
+            </div>
+          </div>
+        </div>
+    </div>
+  </body>
+</html>
