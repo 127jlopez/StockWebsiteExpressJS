@@ -43,21 +43,29 @@ const SplitAndSort2Arrays = async (arrayList) => {
   return [upFromLows, downFromHighs];
 };
 // Allow reading environment variables
-dotenv.config();
+export const getStockData = async () => {
+  try {
+    dotenv.config();
 
-const client = new MongoClient(process.env.MONGODB_URL);
+    const client = new MongoClient(process.env.MONGODB_URL);
 
-await client.connect();
+    await client.connect();
 
-const stockData = client.db("Stocks").collection("SandP500Stocks").find();
-let dataCursor = [];
-let upFromLows = [];
-let downFromHighs = [];
+    const stockData = client.db("Stocks").collection("SandP500Stocks").find();
+    let dataCursor = [];
+    let upFromLows = [];
+    let downFromHighs = [];
 
-await stockData.forEach((doc) => dataCursor.push(doc));
+    await stockData.forEach((doc) => dataCursor.push(doc));
 
-// split the stock into two arrays
-let returnArray = await SplitAndSort2Arrays(dataCursor);
-upFromLows = returnArray[0];
-downFromHighs = returnArray[1];
-exit(1);
+    // split the stock into two arrays
+    let returnArray = await SplitAndSort2Arrays(dataCursor);
+    upFromLows = returnArray[0];
+    downFromHighs = returnArray[1];
+
+    return [upFromLows, downFromHighs];
+  } catch (err) {
+    console.error(err);
+  }
+};
+getStockData().catch(console.error);
