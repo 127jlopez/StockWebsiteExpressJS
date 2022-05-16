@@ -1,11 +1,20 @@
-import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
-/* 
-Need to make this into a function that returns both arrays.
-Need to make this write/update a JSON file as well (Well be used as backup in another part)
-*/
+const dotenv = require("dotenv");
+const MongoClient = require("mongodb").MongoClient;
 
-const SplitAndSort2Arrays = async (arrayList) => {
+dotenv.config();
+const client = new MongoClient(process.env.MONGODB_URL);
+
+// Open connection to database
+const Connect = async () => {
+  try {
+    await client.connect();
+  } catch (e) {
+    console.error(e);
+  }
+};
+Connect().catch(console.error);
+
+async function SplitAndSort2Arrays(arrayList) {
   if (arrayList.length == 0) return;
 
   let upFromLows = [];
@@ -41,17 +50,15 @@ const SplitAndSort2Arrays = async (arrayList) => {
       : -1;
   });
   return [upFromLows, downFromHighs];
-};
+}
+
 // Allow reading environment variables
-export const getStockData = async () => {
+async function getStockData() {
   try {
-    dotenv.config();
-
-    const client = new MongoClient(process.env.MONGODB_URL);
-
-    await client.connect();
+    await Connect();
 
     const stockData = client.db("Stocks").collection("SandP500Stocks").find();
+
     let dataCursor = [];
     let upFromLows = [];
     let downFromHighs = [];
@@ -66,6 +73,7 @@ export const getStockData = async () => {
     return [upFromLows, downFromHighs];
   } catch (err) {
     console.error(err);
+    return 0;
   }
-};
-getStockData().catch(console.error);
+}
+module.exports = { getStockData };
