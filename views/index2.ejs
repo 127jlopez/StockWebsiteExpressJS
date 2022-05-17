@@ -14,15 +14,15 @@
   </head>
   <body>
     <h1>Stocks Info</h1>
-    <div class='worststockdisplay'>
-      <h2>S&P 500 largest losers</h2>
+    <div class='beststockdisplay'>
+      <h2>S&P 500 Best Winners</h2>
         <colgroup>
           <col span='3' />
         </colgroup>
           <div class='dropmenu-content'>
             <label for='numberofstock'># of Stocks:</label>
 
-            <form action="/" method="POST">
+            <form action="/BestStocks" method="POST">
               <select name='numberofstockselect'>
                 <option value='1' selected>1</option>
                 <option value='5'>5</option>
@@ -39,14 +39,14 @@
                   <th>No.</th>
                   <th>Ticker Symbol</th>
                   <th>Current Price</th>
-                  <th>% Down</th>
+                  <th>% Up</th>
                 </tr>
                 <% for(let i = 0; i < selectValue; i++) { %>
                   <tr>
                     <td><%= i + 1 %></td>
                     <td><%= stock[i].tickerSymbol %></td>
                     <td><%= stock[i].currentPrice %></td>
-                    <td><%= stock[i].deltaPricePercentageFromHigh %></td>
+                    <td><%= stock[i].deltaPricePercentageFromLow %></td>
                   </tr>
                   <% } %>
                 </tr> 

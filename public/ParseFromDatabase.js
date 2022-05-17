@@ -52,7 +52,7 @@ async function SplitAndSort2Arrays(arrayList) {
   return [upFromLows, downFromHighs];
 }
 
-// Allow reading environment variables
+// Reuturns the stock data sorted
 async function getStockData() {
   try {
     await Connect();
