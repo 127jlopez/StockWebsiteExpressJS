@@ -55,6 +55,8 @@ async function SplitAndSort2Arrays(arrayList) {
 // Reuturns the stock data sorted
 async function getStockData() {
   try {
+    // Need to check if updating database
+    //
     await Connect();
 
     const stockData = client.db("Stocks").collection("SandP500Stocks").find();
