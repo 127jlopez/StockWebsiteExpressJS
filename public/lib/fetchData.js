@@ -1,9 +1,9 @@
 "use strict";
-import fetch from "node-fetch";
-import dotenv from "dotenv";
+const fetch = require("node-fetch");
+const dotenv = require("dotenv");
 
 dotenv.config();
-export const getDataYahoo = async (tickerySymbol) => {
+async function getDataYahoo(tickerySymbol) {
   if (tickerySymbol == undefined) return;
   try {
     const url =
@@ -16,11 +16,13 @@ export const getDataYahoo = async (tickerySymbol) => {
         "x-api-key": process.env.YAHOOAPIKEY,
       },
     };
-    const res = await fetch(url, options);
+    const res = await fetch.fetch(url, options);
     const data = await res.json();
     return data;
   } catch (err) {
     console.error(err);
   }
-}; // end of Method
+} // end of Method
 getDataYahoo().catch(console.error);
+
+module.exports = { getDataYahoo };

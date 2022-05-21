@@ -1,10 +1,11 @@
-import { getDataYahoo } from "./fetchData.js";
-import { readFileSync } from "fs";
-import { UpdateDocument } from "./mongodb.js";
+const _getDataYahoo = require("./fetchData.js");
+const _readFileSync = require("fs");
+const _UpdateDocument = require("./mongodb.js");
 
 // Return a list of ticker Symbols
-export const TickerSymbol = async (stockFile, numOfArrays) => {
-  let tickerSymbol = readFileSync(stockFile, "utf8");
+async function TickerSymbol(stockFile, numOfArrays) {
+  console.log("parsing file: " + stockFile);
+  let tickerSymbol = _readFileSync.readFileSync(stockFile, "utf8");
   let tickerSymbolList = tickerSymbol.split("\n");
   tickerSymbolList.sort();
 
@@ -16,40 +17,23 @@ export const TickerSymbol = async (stockFile, numOfArrays) => {
     counter++;
   }
   return tickerSplit;
-};
+}
 /********************************************************/
 // Returns JSON data from API
-export const SchemaYahoo = async (symbol) => {
-  return getDataYahoo(symbol);
-};
-
-// Get the most recent time
-// TODO: Change the if statement to return TIME_SERIES_INTRDAY
-export const DateString = async () => {
-  let today = new Date();
-
-  let hour = today.getHours();
-  let minute = today.getMinutes();
-  let day = today.getDate();
-
-  if ((hour < "6") & (minute < "30") || hour >= "13") {
-    // check the time of the day
-    // will need to add checks for with month example if today is march 1
-    // then will need to return feb 28 or feb 29 (leap year)
-    return "TIME_SERIES_DAILY";
-  } else {
-    return "TIME_SERIES_DAILY";
-  }
-};
+async function SchemaYahoo(symbol) {
+  return _getDataYahoo.getDataYahoo(symbol);
+}
 
 //
-export const WriteData = async (symbol) => {
+async function WriteData(symbol) {
   if (symbol == undefined) return;
   try {
     let time = new Date();
-    let timeStamp = `${time.getFullYear()}/${
-      time.getMonth() + 1
-    }/${time.getDate()} ${time.getHours()}:${time.getMinutes()}}`;
+
+    let timeStamp = `${time.getFullYear()}/${time.getMonth() + 1}/
+    ${time.getDate()} 
+    ${time.getHours()}:${time.getMinutes()}}`;
+
     const stockData = await SchemaYahoo(symbol);
 
     const fiftyTwoWeekLowChangePercent =
@@ -68,11 +52,13 @@ export const WriteData = async (symbol) => {
       deltaPricePercentageFromHigh: fiftyTwoWeekHighChangePercent,
       lastUpdateTime: timeStamp,
     };
-    await UpdateDocument(symbol, newStockJSON);
+    await _UpdateDocument.UpdateDocument(symbol, newStockJSON);
     await new Promise((r) => setTimeout(r, 500));
   } catch (err) {
     err = err + " TickerSymbol: " + symbol;
     console.error(err);
   }
-};
+}
 WriteData().catch(console.error);
+
+module.exports = { TickerSymbol, SchemaYahoo, WriteData };

@@ -1,8 +1,13 @@
 const express = require("express");
-const _getStockData = require("./public/ParseFromDatabase.js");
-const _bodyParser = require("body-parser");
+//const _getStockData = require("./public/ParseFromDatabase.js");
+//const _bodyParser = require("body-parser");
+const _cors = require("cors");
+//const _dotenv = require("dotenv").config();
+
+//const dataBase = require("./public/lib/mongodb.js");
 
 const app = express();
+const port = 4000;
 
 /*
 
@@ -37,22 +42,29 @@ process.exit(1);
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
-app.use(_bodyParser.urlencoded({ extended: true }));
+//app.use(_cors);
+//app.use(_bodyParser.urlencoded({ extended: true }));
 
-app.get("/", getWorstStockData, (req, res) => {});
-
-app.get("/BestStocks", getBestStockData, (req, res) => {});
-
-app.listen(3000, () => {
-  console.log("Listening on port: 3000");
+app.get("/", (req, res) => {
+  res.send("Hello Delilah!!!!");
+  console.log("Set up home page");
 });
 
-app.post("/", getWorstStockData, (req, res) => {});
+//app.get("/BestStocks", getBestStockData, (req, res) => {});
 
-app.post("/BestStocks", getBestStockData, (req, res) => {});
+app.listen(port, () => {
+  console.log(`Listening on port: ${port}`);
+});
+
+//app.post("/", getWorstStockData, (req, res) => {});
+
+//app.post("/BestStocks", getBestStockData, (req, res) => {});
 
 async function getWorstStockData(req, res, next) {
-  let arr = await _getStockData.getStockData();
+  console.log("Getting worst data");
+  const _db = await dataBase.getDB();
+  console.log(_db);
+  let arr = await _getStockData.getStockData(_db);
 
   res.render("index", {
     stock: arr[1],
@@ -62,7 +74,9 @@ async function getWorstStockData(req, res, next) {
 }
 
 async function getBestStockData(req, res, next) {
-  let arr = await _getStockData.getStockData();
+  const _db = await dataBase.getDB();
+  console.log(_db);
+  let arr = await _getStockData.getStockData(_db);
 
   res.render("index2", {
     stock: arr[0],
