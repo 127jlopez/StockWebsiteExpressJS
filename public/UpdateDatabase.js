@@ -1,24 +1,44 @@
-const _tickerSymbol = require("./lib/StockData.js");
-const _doesDocumentsExistList = require("./lib/mongodb.js");
-
+const _StockData = require("./lib/StockData.js");
 let stockFile = "./lib/SandP500Stocks.txt";
-
-// Get list of the Ticker Symbols
 let numOfArrays = 4;
-console.log("About to start updating");
-StartUpdate();
 
-async function StartUpdate() {
-  console.log("about to get stock list");
-  let stockList = await _tickerSymbol.TickerSymbol(stockFile, numOfArrays);
-  console.log(stockList);
+const StartUpdate = async (_Mongod) => {
+  if (_Mongod == undefined) return;
 
-  let promises = [];
-  for (let i = 0; i < stockList.length; i++) {
-    console.log("pushed to update: " + i);
+  try {
+    if (CheckStartUpdateTime() == 0) return;
+    let stockList = await _StockData.TickerSymbol(stockFile, numOfArrays);
 
-    promises.push(_doesDocumentsExistList.DoesDocumentsExistList(stockList[i]));
+    let promises = [];
+    for (let i = 0; i < stockList.length; i++) {
+      console.log("pushed to update: " + i);
+
+      promises.push(_Mongod.DoesDocumentsExistList(stockList[i]));
+    }
+    await Promise.all(promises);
+  } catch (err) {
+    console.error(err);
   }
-  await Promise.all(promises);
-}
-process.exit(1);
+};
+StartUpdate().catch(console.error);
+
+const CheckStartUpdateTime = async () => {
+  try {
+    let timeStamp = new Date().getTime();
+    let day = new Date().getDay();
+
+    let stockMarketCloseLocalTime = new Date();
+    stockMarketCloseLocalTime.setHours(12, 30, 0, 0);
+
+    if ((day != 0 || day != 6) && stockMarketCloseLocalTime < timeStamp)
+      return 0;
+    else {
+      return 1;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+CheckStartUpdateTime().catch(console.error);
+
+module.exports = { StartUpdate };

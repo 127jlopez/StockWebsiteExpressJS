@@ -1,38 +1,43 @@
-const _getDataYahoo = require("./fetchData.js");
-const _readFileSync = require("fs");
-const _UpdateDocument = require("./mongodb.js");
+const _FetchData = require("./fetchData.js");
+const _Fs = require("fs");
 
 // Return a list of ticker Symbols
-async function TickerSymbol(stockFile, numOfArrays) {
-  console.log("parsing file: " + stockFile);
-  let tickerSymbol = _readFileSync.readFileSync(stockFile, "utf8");
-  let tickerSymbolList = tickerSymbol.split("\n");
-  tickerSymbolList.sort();
+const TickerSymbol = async (stockFile, numOfArrays) => {
+  if (stockFile == undefined) return;
+  try {
+    console.log("parsing file: " + stockFile);
+    let tickerSymbol = _Fs.readFileSync(stockFile, "utf8");
+    let tickerSymbolList = tickerSymbol.split("\n");
+    tickerSymbolList.sort();
 
-  const chunkSize = Math.ceil(tickerSymbolList.length / numOfArrays);
-  let tickerSplit = [];
-  let counter = 0;
-  for (let i = 0; i < tickerSymbolList.length; i += chunkSize) {
-    tickerSplit[counter] = tickerSymbolList.slice(i, i + chunkSize);
-    counter++;
+    const chunkSize = Math.ceil(tickerSymbolList.length / numOfArrays);
+    let tickerSplit = [];
+    let counter = 0;
+    for (let i = 0; i < tickerSymbolList.length; i += chunkSize) {
+      tickerSplit[counter] = tickerSymbolList.slice(i, i + chunkSize);
+      counter++;
+    }
+    return tickerSplit;
+  } catch (err) {
+    console.error(err);
   }
-  return tickerSplit;
-}
-/********************************************************/
-// Returns JSON data from API
-async function SchemaYahoo(symbol) {
-  return _getDataYahoo.getDataYahoo(symbol);
-}
+};
+TickerSymbol().catch(console.error);
 
-//
-async function WriteData(symbol) {
+const SchemaYahoo = async (symbol) => {
+  try {
+    return _FetchData.getDataYahoo(symbol);
+  } catch (err) {
+    console.error(err);
+  }
+};
+SchemaYahoo().catch(console.error);
+
+const WriteData = async (symbol, _Mongod) => {
   if (symbol == undefined) return;
   try {
-    let time = new Date();
-
-    let timeStamp = `${time.getFullYear()}/${time.getMonth() + 1}/
-    ${time.getDate()} 
-    ${time.getHours()}:${time.getMinutes()}}`;
+    let timeStamp = `${getDate()} ${getTimeHHMM}`;
+    console.log(`timestamp: ${timeStamp}`);
 
     const stockData = await SchemaYahoo(symbol);
 
@@ -52,13 +57,39 @@ async function WriteData(symbol) {
       deltaPricePercentageFromHigh: fiftyTwoWeekHighChangePercent,
       lastUpdateTime: timeStamp,
     };
-    await _UpdateDocument.UpdateDocument(symbol, newStockJSON);
+    await _Mongod.UpdateDocument(symbol, newStockJSON); // I will have to deal with this should not be here
+    // need to refactor this file with mongod
     await new Promise((r) => setTimeout(r, 500));
   } catch (err) {
     err = err + " TickerSymbol: " + symbol;
     console.error(err);
   }
-}
+};
 WriteData().catch(console.error);
 
-module.exports = { TickerSymbol, SchemaYahoo, WriteData };
+const getDate = async () => {
+  try {
+    let todaysDateTime = new Date();
+    let date = `${todaysDateTime.getFullYear()}/${
+      todaysDateTime.getMonth() + 1
+    }/
+  ${todaysDateTime.getDate()}`;
+    return date;
+  } catch (err) {
+    console.error(err);
+  }
+};
+getDate().catch(console.error);
+
+const getTimeHHMM = async () => {
+  try {
+    let todaysDateTime = new Date();
+    let time = `${todaysDateTime.getHours()}:${todaysDateTime.getMinutes()}`;
+    return time;
+  } catch (err) {
+    console.error(err);
+  }
+};
+getTimeHHMM().catch(console.error);
+
+module.exports = { TickerSymbol, SchemaYahoo, WriteData, getDate, getTimeHHMM };

@@ -1,14 +1,48 @@
 const express = require("express");
-//const _getStockData = require("./public/ParseFromDatabase.js");
-//const _bodyParser = require("body-parser");
+const _ParseFromDatabase = require("./public/ParseFromDatabase.js");
+const _bodyParser = require("body-parser");
 const _cors = require("cors");
-//const _dotenv = require("dotenv").config();
-
-//const dataBase = require("./public/lib/mongodb.js");
+const _DataBase = require("./public/lib/mongodb.js");
+const _UpdateDatabase = require("./public/UpdateDatabase.js");
 
 const app = express();
 const port = 4000;
 
+//_UpdateDatabase.StartUpdate(_DataBase);
+
+const getWorstStockData = async (req, res, next) => {
+  try {
+    const _db = await _DataBase.getDB();
+    let arr = await _ParseFromDatabase.getStockData(_db);
+    if (arr == undefined) return;
+
+    res.render("index", {
+      stock: arr[1],
+      selectValue: Number(req.body.numberofstockselect),
+    });
+    next();
+  } catch (err) {
+    console.error(err);
+  }
+};
+getWorstStockData().catch(console.error);
+
+const getBestStockData = async (req, res, next) => {
+  try {
+    const _db = await _DataBase.getDB();
+    let arr = await _ParseFromDatabase.getStockData(_db);
+    if (arr == undefined) return;
+
+    res.render("index2", {
+      stock: arr[0],
+      selectValue: Number(req.body.numberofstockselect),
+    });
+    next();
+  } catch (err) {
+    console.error(err);
+  }
+};
+getBestStockData().catch(console.error);
 /*
 
 let = todays MM/DD/YYYY & time HH:MM
@@ -42,45 +76,19 @@ process.exit(1);
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
-//app.use(_cors);
-//app.use(_bodyParser.urlencoded({ extended: true }));
+app.use(_cors);
+app.use(_bodyParser.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-  res.send("Hello Delilah!!!!");
-  console.log("Set up home page");
+app.get("/", getWorstStockData, (req, res) => {
+  res.render("index");
 });
 
-//app.get("/BestStocks", getBestStockData, (req, res) => {});
+app.get("/BestStocks", getBestStockData, (req, res) => {});
 
 app.listen(port, () => {
   console.log(`Listening on port: ${port}`);
 });
 
-//app.post("/", getWorstStockData, (req, res) => {});
+app.post("/", getWorstStockData, (req, res) => {});
 
-//app.post("/BestStocks", getBestStockData, (req, res) => {});
-
-async function getWorstStockData(req, res, next) {
-  console.log("Getting worst data");
-  const _db = await dataBase.getDB();
-  console.log(_db);
-  let arr = await _getStockData.getStockData(_db);
-
-  res.render("index", {
-    stock: arr[1],
-    selectValue: Number(req.body.numberofstockselect),
-  });
-  next();
-}
-
-async function getBestStockData(req, res, next) {
-  const _db = await dataBase.getDB();
-  console.log(_db);
-  let arr = await _getStockData.getStockData(_db);
-
-  res.render("index2", {
-    stock: arr[0],
-    selectValue: Number(req.body.numberofstockselect),
-  });
-  next();
-}
+app.post("/BestStocks", getBestStockData, (req, res) => {});

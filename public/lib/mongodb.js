@@ -1,8 +1,17 @@
 const MongoClient = require("mongodb").MongoClient;
-const _WriteData = require("./StockData.js");
+const _StockData = require("./StockData.js");
+const _Dotenv = require("dotenv");
+const results = _Dotenv.config();
+
+if (results.error) {
+  console.log(results);
+}
 
 const url = process.env.MONGODB_URL;
-const client = new MongoClient(url);
+const client = new MongoClient(url, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 let _db;
 
@@ -19,26 +28,30 @@ const Connect = async () => {
 Connect().catch(console.error);
 
 // Close connection to database
-const Disconnect = async () => {
+/*const Disconnect = async () => {
   try {
     await client.close();
   } catch (e) {
     console.error(e);
   }
 };
-Disconnect().catch(console.error);
+Disconnect().catch(console.error); */
 
 const getDB = async () => {
-  return _db;
+  try {
+    return _db;
+  } catch (err) {
+    console.error(err);
+  }
 };
+getDB().catch(console.error);
 
 // Update Collection with the Schema
-const UpdateDocument = async (documentName = " ", data = {}) => {
-  if (documentName == " ") return;
-
-  await Connect();
+const UpdateDocument = async (documentName, data = {}) => {
+  if (documentName == undefined) return;
 
   try {
+    console.log("Inside UpdateDocument");
     const stock = await _db
       .collection("SandP500Stocks")
       .updateOne({ tickerSymbol: documentName }, { $set: data });
@@ -53,34 +66,46 @@ const UpdateDocument = async (documentName = " ", data = {}) => {
 UpdateDocument().catch(console.error);
 
 // finds document holding stock info by search by name
-const DoesDocumentsExistList = async (documentList = " ") => {
-  if (documentList == " ") return;
+const DoesDocumentsExistList = async (documentList) => {
+  if (documentList == undefined) return;
 
-  await Connect();
+  try {
+    for (let i = 0; i < documentList.length; i++) {
+      console.log("Inside DoesDocumentsExistList");
+      const stock = await _db
+        .collection("SandP500Stocks")
+        .findOne({ tickerSymbol: documentList[i] });
 
-  for (let i = 0; i < documentList.length; i++) {
-    const stock = await _db
-      .collection("SandP500Stocks")
-      .findOne({ tickerSymbol: documentList[i] });
+      let newStockJSON = {
+        tickerSymbol: documentList[i],
+        currentPrice: 0,
+        deltaPricePercentageFromLow: 0,
+        deltaPricePercentageFromHigh: 0,
+        lastUpdateTime: 0,
+      };
 
-    let newStockJSON = {
-      tickerSymbol: documentList[i],
-      currentPrice: 0,
-      deltaPricePercentageFromLow: 0,
-      deltaPricePercentageFromHigh: 0,
-      lastUpdateTime: 0,
-    };
-
-    if (stock == null) {
-      insertDocumentData(newStockJSON);
-      console.log("inserting new doument: " + documentList[i]);
+      if (stock == null) {
+        insertDocumentData(newStockJSON);
+        console.log("inserting new doument: " + documentList[i]);
+      }
+      await _StockData.WriteData(documentList[i]);
     }
-    await _WriteData.WriteData(documentList[i]);
+  } catch (err) {
+    console.error(err);
   }
 };
+DoesDocumentsExistList().catch(console.error);
 
 const insertDocumentData = async (newStockJSON) => {
-  await _db.collection("SandP500Stocks").insertOne(newStockJSON);
+  if (newStockJSON == undefined) return;
+  try {
+    await Connect();
+    console.log("Inside insertDocumentData");
+    await _db.collection("SandP500Stocks").insertOne(newStockJSON);
+  } catch (err) {
+    console.error(err);
+  }
 };
+insertDocumentData().catch(console.error);
 
-module.export = { UpdateDocument, DoesDocumentsExistList, getDB };
+module.exports = { UpdateDocument, DoesDocumentsExistList, getDB };

@@ -1,9 +1,8 @@
 "use strict";
-const fetch = require("node-fetch");
-const dotenv = require("dotenv");
+const _Fetch = require("node-fetch");
+const _Dotenv = require("dotenv").config();
 
-dotenv.config();
-async function getDataYahoo(tickerySymbol) {
+const getDataYahoo = async (tickerySymbol) => {
   if (tickerySymbol == undefined) return;
   try {
     const url =
@@ -16,13 +15,13 @@ async function getDataYahoo(tickerySymbol) {
         "x-api-key": process.env.YAHOOAPIKEY,
       },
     };
-    const res = await fetch.fetch(url, options);
+    const res = await _Fetch.fetch(url, options);
     const data = await res.json();
     return data;
   } catch (err) {
     console.error(err);
   }
-} // end of Method
+}; // end of Method
 getDataYahoo().catch(console.error);
 
 module.exports = { getDataYahoo };
