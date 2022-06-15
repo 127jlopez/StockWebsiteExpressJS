@@ -39,12 +39,12 @@
                   <th>Current Price</th>
                   <th>% Down</th>
                 </tr>
-                <% for(let i = 0; i < selectValue; i++) { %>
+                <% for(let i = 0; i < (locals.selectValue || 1); i++) { %>
                   <tr>
                     <td><%= i + 1 %></td>
-                    <td><%= stock[i].tickerSymbol %></td>
-                    <td><%= stock[i].currentPrice %></td>
-                    <td><%= stock[i].deltaPricePercentageFromHigh %></td>
+                    <td><%= locals.stock[i].tickerSymbol %></td>
+                    <td><%= locals.stock[i].currentPrice %></td>
+                    <td><%= locals.stock[i].deltaPricePercentageFromHigh %></td>
                   </tr>
                   <% } %>
                 </tr> 
