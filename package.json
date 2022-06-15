@@ -12,6 +12,7 @@
     "jQuery": "^1.7.4",
     "mongodb": "^4.7.0",
     "node-fetch": "^3.2.4",
+    "react": "^18.2.0",
     "request": "^2.88.2",
     "require": "^2.4.20"
   },
