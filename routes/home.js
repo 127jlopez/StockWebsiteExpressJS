@@ -9,17 +9,26 @@ const _bodyParser = require("body-parser");
 
 router.use(_bodyParser.urlencoded({ extended: true }));
 
-router.get("/", getWorstStockData, (req, res) => {});
+router.get("/getworststockdata", getWorstStockData, (req, res) => {
+  //res.send("ExpressJS is connected to ReactJS");
+});
 
-// Will Update
-router.post("/", getWorstStockData, (req, res) => {});
+router.get("/getbeststockdata", getBestStockData, (req, res) => {
+  res.send("ExpressJS is connected to ReactJS");
+});
+
+// Will Update to return S&P500, DOW, & NasDaq stock list
+router.post("/getworststockdata", getWorstStockData, (req, res) => {});
+router.post("/getbeststockdata", getBestStockData, (req, res) => {});
+
+router.patch("/getworststockdata", getWorstStockData, (req, res) => {});
+router.patch("/getbeststockdata", getBestStockData, (req, res) => {});
 
 async function getWorstStockData(req, res, next) {
   let arr = await _getStockData.getStockData();
 
-  res.render("index.ejs", {
+  res.send({
     stock: arr[1],
-    selectValue: Number(req.body.numberofstockselect),
   });
   res.status(200);
   next();
@@ -28,9 +37,8 @@ async function getWorstStockData(req, res, next) {
 async function getBestStockData(req, res, next) {
   let arr = await _getStockData.getStockData();
 
-  res.render("index2", {
+  res.send({
     stock: arr[0],
-    selectValue: Number(req.body.numberofstockselect),
   });
   res.status(200);
   next();
