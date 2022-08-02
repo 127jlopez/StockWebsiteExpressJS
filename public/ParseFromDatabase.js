@@ -4,14 +4,18 @@ const MongoClient = require("mongodb").MongoClient;
 dotenv.config();
 const client = new MongoClient(process.env.MONGODB_URL);
 
+let db = undefined;
+
 // Open connection to database
-const Connect = async () => {
+async function Connect(stockCollection) {
   try {
     await client.connect();
+    db = client.db("Stocks").collection(`${stockCollection}`);
+    console.log(`Connected to ${db}`);
   } catch (e) {
     console.error(e);
   }
-};
+}
 Connect().catch(console.error);
 
 async function SplitAndSort2Arrays(arrayList) {
@@ -53,18 +57,16 @@ async function SplitAndSort2Arrays(arrayList) {
 }
 
 // Reuturns the stock data sorted
-async function getStockData() {
+async function getStockData(stockCollection) {
   try {
-    await Connect();
+    await Connect(stockCollection);
 
-    const stockData = client.db("Stocks").collection("SandP500Stocks").find();
-
+    const stockData = db.find();
     let dataCursor = [];
     let upFromLows = [];
     let downFromHighs = [];
 
     await stockData.forEach((doc) => dataCursor.push(doc));
-
     // split the stock into two arrays
     let returnArray = await SplitAndSort2Arrays(dataCursor);
     upFromLows = returnArray[0];
@@ -73,7 +75,6 @@ async function getStockData() {
     return [upFromLows, downFromHighs];
   } catch (err) {
     console.error(err);
-    return 0;
   }
 }
 module.exports = { getStockData };

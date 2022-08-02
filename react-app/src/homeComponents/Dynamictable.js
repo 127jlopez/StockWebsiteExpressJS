@@ -1,17 +1,28 @@
-import React from "react";
+import React, { useContext } from "react";
+import { HomeContext } from "./ContextHome";
+
+import Table from "react-bootstrap/Table";
 
 function createTable(Data, selectValue) {
   let stockList = [];
+
+  const deltaPricePercentageFromHIGH = "deltaPricePercentageFromHigh";
+  const deltaPricePercentageFromLOW = "deltaPricePercentageFromLow";
+  let highOrLow = deltaPricePercentageFromHIGH;
   if (Data === null) return <></>;
 
-  console.log(`Length Data in createtable: ${Data.length}`);
+  if (selectValue > Data["stock"].length) selectValue = Data["stock"].length;
+
+  if (Data["stock"][0]["deltaPricePercentageFromHigh"] === undefined)
+    highOrLow = deltaPricePercentageFromLOW;
+
   for (let i = 0; i < selectValue; i++) {
     stockList.push(
-      <tr>
+      <tr key={i}>
         <th>{i + 1}</th>
         <th>{Data["stock"][`${i}`]["tickerSymbol"]}</th>
         <th>{Data["stock"][`${i}`]["currentPrice"]}</th>
-        <th>{Data["stock"][`${i}`]["deltaPricePercentageFromHigh"]}</th>
+        <th>{Data["stock"][`${i}`][`${highOrLow}`]}</th>
       </tr>
     );
   }
@@ -19,20 +30,29 @@ function createTable(Data, selectValue) {
   return stockList;
 }
 
-export default function Dynamictable({ jsonData, numberOfStockToDisplay }) {
+export default function Dynamictable() {
+  const selectValue = useContext(HomeContext);
+  const data = useContext(HomeContext);
+
+  if (data.data === null) return;
+
+  let downOrUp = "% Down";
+  if (data.data["stock"][0]["deltaPricePercentageFromHigh"] === undefined)
+    downOrUp = "% Up";
+
   return (
     <>
-      <table>
+      <Table striped bordered responsive>
         <thead>
           <tr>
             <th>No.</th>
-            <th>Ticker Symbol</th>
+            <th>Symbol</th>
             <th>Current Price</th>
-            <th>% Down</th>
+            <th>{downOrUp}</th>
           </tr>
-          {createTable(jsonData, numberOfStockToDisplay)}
+          {createTable(data.data, selectValue.selectValue)}
         </thead>
-      </table>
+      </Table>
     </>
   );
 }

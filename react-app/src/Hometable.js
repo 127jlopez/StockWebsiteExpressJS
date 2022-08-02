@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
-import Select from "react-select";
-import { SandPListData } from "./Backend/FetchBackendData";
-import Dynamictable from "./homeComponents/Dynamictable";
+import React, { useState, useEffect, useReducer } from "react";
 
-const sandP500SelectOptions = [
+import Dynamictable from "./homeComponents/Dynamictable";
+import Selectgroup from "./homeComponents/Selectgroup";
+import Buttongroup from "./homeComponents/Buttongroup";
+import { HomeContext } from "./homeComponents/ContextHome";
+
+/// Bootstrap
+
+import "bootstrap/dist/css/bootstrap.min.css";
+
+export const sandP500SelectOptions = [
   {
     value: 1,
     label: "1",
@@ -30,7 +36,7 @@ const sandP500SelectOptions = [
   },
 ];
 
-const dowSelectOptions = [
+export const dowSelectOptions = [
   {
     value: 1,
     label: "1",
@@ -53,56 +59,94 @@ const dowSelectOptions = [
   },
 ];
 
+const initalReducerState = {
+  worstOrBest: "worst",
+  stockIndex: "sandp500",
+};
+
+const reducer = (stockState, action) => {
+  switch (action.type) {
+    case "DOW":
+      return {
+        worstOrBest: stockState.worstOrBest,
+        stockIndex: "dow",
+      };
+    case "SANDP":
+      return {
+        worstOrBest: stockState.worstOrBest,
+        stockIndex: "sandp500",
+      };
+    case "WORST":
+      return {
+        worstOrBest: "worst",
+        stockIndex: stockState.stockIndex,
+      };
+    case "BEST":
+      return {
+        worstOrBest: "best",
+        stockIndex: stockState.stockIndex,
+      };
+    default:
+      return stockState;
+  }
+};
+
 /////////////////////////////////////////
 function Hometable() {
   const [selectOption, setSelectOption] = useState(sandP500SelectOptions);
   const [selectValue, setSelectValue] = useState(1);
 
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // these two will dedicate which data will be displayed
+  const [stockState, dispatch] = useReducer(reducer, initalReducerState);
 
   useEffect(() => {
     async function getData() {
       try {
-        const resp = await fetch("http://localhost:4000/getworststockdata");
+        const resp = await fetch(
+          `http://localhost:4000/get${stockState.worstOrBest}${stockState.stockIndex}data`
+        );
         const jsonData = await resp.json();
 
         if (resp.status !== 200) {
           throw Error(jsonData.message);
         }
         setData(jsonData);
-        console.log(`set data to: ${data}`);
       } catch (err) {
         setError(err.message);
         setData(null);
-      } finally {
-        setLoading(false);
       }
     }
 
     getData();
-  }, []);
+  }, [stockState.worstOrBest, stockState.stockIndex]);
 
   if (error !== null) {
-    console.log(`Error message ${error.message}`);
+    console.log(`Error message: ${error.message}`);
   }
 
   return (
     <>
-      <h1>Stocks Info</h1>
-      <h2>Number of stocks:</h2>
-      <Select
-        placeholder="Select number of stock to display"
-        value={1}
-        options={selectOption}
-        onChange={(e) => setSelectValue(e.value)}
-      ></Select>
-      <button onClick={() => setSelectOption(sandP500SelectOptions)}>
-        S&P500
-      </button>
-      <button onClick={() => setSelectOption(dowSelectOptions)}>DOW</button>
-      <Dynamictable jsonData={data} numberOfStockToDisplay={selectValue} />
+      <HomeContext.Provider
+        value={{
+          selectOption,
+          setSelectOption,
+          selectValue,
+          setSelectValue,
+          data,
+          setData,
+          stockState,
+          dispatch,
+        }}
+      >
+        <h1>Stocks Info</h1>
+        <h2>Number of stocks:</h2>
+        <Selectgroup />
+        <Buttongroup />
+        <Dynamictable />
+      </HomeContext.Provider>
     </>
   );
 }
